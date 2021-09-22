@@ -94,13 +94,14 @@ license.txt. file to use FreeSurfer during data preprocessing.
 
 Suggested Computational Resources
 ---------------------------------
+
 While it is difficult to guess the exact correct amount of resources needed for
 any given preprocessing job, general guidelines have been given `here
 <https://fmriprep.org/en/stable/faq.html#how-much-cpu-time-and-ram-should-i-allocate-for-a-typical-fmriprep-run>`__.
-Briefly, 4 CPUs and 4 GBs per CPU (16 total GBs) can complete preprocessing
-(without FreeSurfer surface reconstruction) in 2 hours. Including surface
-reconstruction will dramatically increase the amount of time required, but the
-resources required should be consistent. 
+Briefly, 4 CPUs and 5 GBs per CPU (20 total GBs) can complete preprocessing
+(without FreeSurfer surface reconstruction) in approximately 2 hours. Including
+surface reconstruction will dramatically increase the amount of time required,
+but the resources required should be consistent. 
 
 .. note:: 
     While increasing the amount of resources will decrease computation time,
@@ -133,7 +134,7 @@ BIDS-formatted dataset ``D01``. ::
     #SBATCH --cpus-per-task=4
     #SBATCH --partition=medium
     #SBATCH --time=50:00:00
-    #SBATCH --mem-per-cpu=4000
+    #SBATCH --mem-per-cpu=5000
     #SBATCH --mail-type=FAIL
 
     # load the module
