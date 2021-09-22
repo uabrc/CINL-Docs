@@ -118,6 +118,7 @@ short partition when not performing recon-all, or 32-50 hours on the medium
 partition (depending on the total number of scans to process) when performing
 recon-all is suggested.
 
+.. _example-ss-fmriprep:
 
 Example Single-Subject Job Script
 ---------------------------------

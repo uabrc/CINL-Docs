@@ -2,9 +2,9 @@
 
 # -- Project information
 
-project = 'CINL'
+project = 'CINL Docs'
 copyright = ''
-author = 'Defenderfer'
+author = 'Matthew Defenderfer'
 
 release = '0.1'
 version = '0.1.0'

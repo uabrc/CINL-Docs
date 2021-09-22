@@ -54,30 +54,29 @@ This documenatation contains information on how to :doc:`create and manage
 accounts </xnat/account>`, :doc:`create projects </xnat/projects>`, and
 :doc:`upload and download data </xnat/projects>`.
 
-..
-    BIDS
-    ==============================
 
-    .. toctree::
-        :maxdepth: 1
-        :hidden:
-        :caption: BIDS
+.. BIDS
+.. ==============================
 
-        /bids/principles.rst
+     .. toctree::
+..         :maxdepth: 1
+..         :hidden:
+..         :caption: BIDS
 
-    About BIDS
-    ------------------------------
+..         /bids/principles.rst
 
-    The BIDS data structure refers to a method of organizing and naming nifti
-    and associated JSON files for each MRI scan. Organizing data according to
-    the BIDS framework opens up access to various software applications that
-    only act on BIDS compliant datasets, such as fmriprep, mriqc, and qsiprep.
-    Additionally, matching structures across datasets makes navigation,
-    exploration, and sharing of datasets much easier. A short introduction to
-    BIDS along with examples of BIDS compliant file structures can be found in
-    these docs. Read more about the BIDS framework at
-    `https://bids-specification.readthedocs.io/
-    <https://bids-specification.readthedocs.io/en/stable/>`_
+.. About BIDS
+.. ------------------------------
+
+.. The BIDS data structure refers to a method of organizing and naming nifti and
+.. associated JSON files for each MRI scan. Organizing data according to the BIDS
+.. framework opens up access to various software applications that only act on BIDS
+.. compliant datasets, such as fmriprep, mriqc, and qsiprep. Additionally, matching
+.. structures across datasets makes navigation, exploration, and sharing of
+.. datasets much easier. A short introduction to BIDS along with examples of BIDS
+.. compliant file structures can be found in these docs. Read more about the BIDS
+.. framework at `https://bids-specification.readthedocs.io/
+.. <https://bids-specification.readthedocs.io/en/stable/>`_
 
 
 fmriprep
@@ -89,3 +88,17 @@ fmriprep
 
         /fmriprep/intro.rst
         /fmriprep/fmriprep-on-cheaha.rst
+
+About fmriprep
+------------------------------
+
+fmriprep is a `BIDS app <https://bids-apps.neuroimaging.io/>`_ that performs
+minimal preprocessing on structural (T1w and T2w) and BOLD data. fmriprep
+standardizes how functional data is preprocessed across projects and labs
+through a user-friendly command line interface. fmriprep can be used on the
+Cheaha cluster through Singularity containers, but as of September 2021, the
+most recent version (v20.2.3) has been installed as a module for ease-of-use. A
+short :ref:`introduction<intro-fmriprep>` with an :ref:`example
+script<example-ss-fmriprep>` using fmriprep on Cheaha is included in these
+docs. Read more about fmriprep at `https://fmriprep.org
+<https://fmriprep.org/en/stable/>`_.
