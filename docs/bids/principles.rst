@@ -17,7 +17,7 @@ linked with hyphens while underscores separate each pair. For example, if a
 participant with ID TS001 had a resting state scan, the portion of the scan name
 telling us such would read ``sub-TS001_task-rest``. 
 
-Since both hyphens and underscores are protected characters in the BIDS naming
+Since both ``-`` and ``_`` are protected characters in the BIDS naming
 system, they cannot be used in participant or scan IDs and should be removed
 during BIDS conversion. Conversion tools can take care of that automatically,
 but if you choose to manually convert to BIDS, you will need to include this
@@ -30,17 +30,207 @@ whether they are optional or required can be found in the `entity table
 
 JSON sidecars
 -------------------------------
+
 Each nifti file in your study should also have an accompanying JSON file that
 contains relevant metadata from the DICOM files that can be lost when converting
 to nifti as well as pertinent information about the participant and study. The
-accompanying JSON files can be complex and tedious to create manually. It is
-highly recommended to use a semi-automatic DICOM to BIDS converter to generate
-both the nifti and JSON files. Recommended converters are `dcm2bids
-<https://github.com/UNFmontreal/Dcm2Bids>`_ and `heudiconv
-<https://github.com/nipy/heudiconv>`_. A general guide to using heudiconv can be
-found in this documentation as well.
+accompanying JSON files can be complex and tedious to create manually. If you
+choose to create custom JSON sidecars, it is imperative you read about the
+associated required metadata fields for each type of scan in your study. Those
+descriptions and naming guidelines for MRI data can be found in the `BIDS MRI
+naming guide <https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/01-magnetic-resonance-imaging-data.html>`__.
+
+It is highly recommended to use a semi-automatic DICOM to BIDS converter to
+generate both the nifti and JSON files. Recommended converters are `dcm2bids
+<https://github.com/UNFmontreal/Dcm2Bids>`__ and `heudiconv
+<https://github.com/nipy/heudiconv>`__. A general guide to using heudiconv can
+be found in this documentation as well.
 
 
 Example Name Formats
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------------
 
+For the following examples, any key-value pain in [] is optional in the name.
+Replace entries in <> with corresponding information for the scan. Some values
+in <> must be chosen from a given list from the BIDS site. For example, a T1w
+anatomical image must have the <suffix> field specified as T1w, not T1. 
+
+These examples are not exhaustive but include some more common use cases. Links
+to more examples as well as a complete list and explanation of key-value pairs
+are given in each section. 
+
+Common Keys
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All common keys listed here can be used for multiple image types, but none are
+required to be included except in specific cases. However, these can be included
+to further describe the scan to other researchers without having to read
+metadata from the JSON files.
+
+.. list-table::
+    :widths: 15 60 25
+    :header-rows: 1
+
+    * - Key
+      - Description
+      - Example Values
+    * - ses
+      - Session number the scan belongs to. If the subject 
+      - ses-01, ses-02
+    * - dir
+      - Image phase-encoding direction 
+      - dir-AP, dir-LR
+    * - run
+      - Distinguishes between scans with the same acquisition and direction
+      - run-1, run-2
+    * - acq
+      - Allows the user to distinguish between parameter sets used to acquire
+        the same image modality
+      - acq-highres, acq-lowres
+
+
+Anatomical
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Names for general anatomical nifti and json files can be found here. These
+include T1w, T2w, MP2RAGE, proton density, and others, but not
+diffusion-weighted or functional data. Also included are naming conventions for
+binary defacing masks, if defacing was performed for your dataset. Defacing is
+not required, and inclusion of the masks is not required even if defacing was performed.
+
+.. code-block::
+
+    anat/
+        # Naming structure for general anatomical scans
+        sub-<label>[_ses-<label>][_acq-<label>][_ce-<label>][_rec-<label>][_run-<index>]_<suffix>.json
+        sub-<label>[_ses-<label>][_acq-<label>][_ce-<label>][_rec-<label>][_run-<index>]_<suffix>.nii[.gz]
+
+        # Naming structure for binary mask used during potential defacing
+        sub-<label>[_ses-<label>][_acq-<label>][_ce-<label>][_rec-<label>][_run-<index>][_mod-<label>]_defacemask.json
+        sub-<label>[_ses-<label>][_acq-<label>][_ce-<label>][_rec-<label>][_run-<index>][_mod-<label>]_defacemask.nii[.gz]
+
+A more complete list of anatomical names and key-value pair explanations can be
+found `here
+<https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/01-magnetic-resonance-imaging-data.html#anatomy-imaging-data>`__.
+
+
+Functional (Task and Resting)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Currently, the supported contrasts for task and resting imaging data are BOLD
+and cerebral blood volume (CBV). 
+
+.. code-block::
+
+    func/
+        # BOLD contrast naming scheme
+        sub-<label>[_ses-<label>]_task-<label>[_acq-<label>][_ce-<label>][_rec-<label>][_dir-<label>][_run-<index>][_echo-<index>][_part-<label>]_bold.json
+        sub-<label>[_ses-<label>]_task-<label>[_acq-<label>][_ce-<label>][_rec-<label>][_dir-<label>][_run-<index>][_echo-<index>][_part-<label>]_bold.nii[.gz]
+        
+        # CBV contrast naming scheme
+        sub-<label>[_ses-<label>]_task-<label>[_acq-<label>][_ce-<label>][_rec-<label>][_dir-<label>][_run-<index>][_echo-<index>][_part-<label>]_cbv.json
+        sub-<label>[_ses-<label>]_task-<label>[_acq-<label>][_ce-<label>][_rec-<label>][_dir-<label>][_run-<index>][_echo-<index>][_part-<label>]_cbv.nii[.gz]
+        
+        # Single-band reference images collected before multi-band sequences
+        sub-<label>[_ses-<label>]_task-<label>[_acq-<label>][_ce-<label>][_rec-<label>][_dir-<label>][_run-<index>][_echo-<index>][_part-<label>]_sbref.json
+        sub-<label>[_ses-<label>]_task-<label>[_acq-<label>][_ce-<label>][_rec-<label>][_dir-<label>][_run-<index>][_echo-<index>][_part-<label>]_sbref.nii[.gz]
+        
+        # Naming scheme for description of event timing during tasks scans
+        sub-<label>[_ses-<label>]_task-<label>[_acq-<label>][_ce-<label>][_rec-<label>][_dir-<label>][_run-<index>]_events.json
+        sub-<label>[_ses-<label>]_task-<label>[_acq-<label>][_ce-<label>][_rec-<label>][_dir-<label>][_run-<index>]_events.tsv
+        
+        # Naming scheme for physio data collected and stored as tsv
+        sub-<label>[_ses-<label>]_task-<label>[_acq-<label>][_ce-<label>][_rec-<label>][_dir-<label>][_run-<index>][_recording-<label>]_physio.json
+        sub-<label>[_ses-<label>]_task-<label>[_acq-<label>][_ce-<label>][_rec-<label>][_dir-<label>][_run-<index>][_recording-<label>]_physio.tsv.gz
+
+The task key followed by the task name is always required for BOLD and CBV
+scans. For resting-state scans, the appropriate key-value pair is ``task-rest``.
+For multiple resting state or multiple of the same task, use the ``run`` and
+``dir`` keys to differentiate them. 
+
+Task event file names should match the scan name exactly, except replacing
+_bold.nii.gz with _events.tsv. As always, the json file name should match the
+events.tsv name.
+
+A more complete list of functional names and key-value pair explanations can be
+found `here
+<https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/01-magnetic-resonance-imaging-data.html#task-including-resting-state-imaging-data>`__.
+
+
+Diffusion
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Currently, the only supported diffusion imaging types are diffusion-weighted
+(dwi), and their corresponding single-band reference (sbref) images, if
+multi-band was used to collect the diffusion data.
+
+.. code-block::
+
+    dwi/
+        # bvec and bval outputs from converting to nifti
+        sub-<label>[_ses-<label>][_acq-<label>][_dir-<label>][_run-<index>][_part-<label>]_dwi.bval
+        sub-<label>[_ses-<label>][_acq-<label>][_dir-<label>][_run-<index>][_part-<label>]_dwi.bvec
+        
+        # Diffusion scan naming scheme
+        sub-<label>[_ses-<label>][_acq-<label>][_dir-<label>][_run-<index>][_part-<label>]_dwi.json
+        sub-<label>[_ses-<label>][_acq-<label>][_dir-<label>][_run-<index>][_part-<label>]_dwi.nii[.gz]
+        
+        # SBRef naming scheme
+        sub-<label>[_ses-<label>][_acq-<label>][_dir-<label>][_run-<index>][_part-<label>]_sbref.json
+        sub-<label>[_ses-<label>][_acq-<label>][_dir-<label>][_run-<index>][_part-<label>]_sbref.nii[.gz]
+        
+bvec and bval files MUST follow the FSL format.
+
+A more complete list of diffusion names and key-value pair explanations as well
+as an explanation of the FSL format for bvec and bval files can be found `here
+<https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/01-magnetic-resonance-imaging-data.html#diffusion-imaging-data>`__.
+
+
+Fieldmap
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Multiple types of phasemaps can be stored using the BIDS data structure. These
+include phase-difference maps, two phase maps, direct field maps, and
+phase-encoded polar fieldmaps. Which type of fieldmap you acquire for your
+dataset will determine the suffix at the end of the file name.
+
+.. code-block::
+
+    fmap/
+        # Phase-difference maps
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_magnitude1.json
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_magnitude1.nii[.gz]
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_magnitude2.json
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_magnitude2.nii[.gz]
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_phasediff.json
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_phasediff.nii[.gz]
+
+        # Two phase maps 
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_magnitude1.json
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_magnitude1.nii[.gz]
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_magnitude2.json
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_magnitude2.nii[.gz]
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_phase1.json
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_phase1.nii[.gz]
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_phase2.json
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_phase2.nii[.gz]
+
+        # Direct fieldmap 
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_fieldmap.json
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_fieldmap.nii[.gz]
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_magnitude.json
+        sub-<label>[_ses-<label>][_acq-<label>][_run-<index>]_magnitude.nii[.gz]
+
+        # Multiple phase encoded directions (AP/PA; LR/RL)
+        sub-<label>[_ses-<label>][_acq-<label>][_ce-<label>]_dir-<label>[_run-<index>]_epi.json
+        sub-<label>[_ses-<label>][_acq-<label>][_ce-<label>]_dir-<label>[_run-<index>]_epi.nii[.gz]
+
+For multiple phase encoded directions, the dir key-pair must be included in the
+name. A more complete list of field map names and key-value pair explanations as
+well as an explanation of the FSL format for bvec and bval files can be found
+`here
+<https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/01-magnetic-resonance-imaging-data.html#fieldmap-data>`__.
+
+.. 
+    TODO: Add short section on IntendedFor field here once that section is
+    written in the HeuDiConv section.
