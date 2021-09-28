@@ -12,13 +12,37 @@ further information <https://heudiconv.readthedocs.io/en/latest/index.html>`__.
 Installation
 -------------------------------
 
-The simplest method to install Heudiconv is through use of Singularity
-containers. Containers are stand-alone instances that provide all the necessary
-dependencies for a given program out-of-the-box so no management of external
-programs is required. Using this method, you will download a Singularity image
-file containing Heudiconv and all of its dependencies in a single location in
-your personal user space or a shared lab project space. More information on
-using Singularity containers can be found at their `documentation
+There are multiple methods to install Heudiconv including as a Python library or
+as a standalone Singularity container. How you interface with Heudiconv changes
+slightly based on how you install it, but both installation methods will be
+covered here.
+
+As a Python Library
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+First, load an Anaconda module on Cheaha and create a virtual environment. From
+there, you can use ``pip`` to install the Heudiconv like:
+
+.. code-block:: bash
+
+    module load Anaconda3/2020.11
+    
+    # create and/or activate your virtual environment here
+
+    pip install heudiconv[all]
+
+This will download the latest version of Heudiconv. After installation, you can use the library through the ``heudiconv`` command.
+
+
+As a Container
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Containers are stand-alone instances that provide all the necessary dependencies
+for a given program out-of-the-box so no management of external programs is
+required. Using this method, you will download a Singularity image file
+containing Heudiconv and all of its dependencies in a single location in your
+personal user space or a shared lab project space. More information on using
+Singularity containers can be found at their `documentation
 <https://sylabs.io/guides/3.8/user-guide/>`__.
 
 In order to use Singularity on Cheaha, you will need to load the module. You
@@ -35,10 +59,8 @@ installed Singularity modules and load the one you want.
 
 The container for Heudiconv can be found on their `DockerHub page
 <https://hub.docker.com/r/nipy/heudiconv>`__, and the source code can be found
-on their `github page <https://github.com/nipy/heudiconv>`__. When downloading
-the image file, monitor these pages for updated releases. If the updated
-releases do not work correctly, use a previous version and report the issue on
-github.
+on their `github page <https://github.com/nipy/heudiconv>`__. Currently, the
+latest working Singularity container is version 0.5.4.
 
 To begin, open a terminal window on Cheaha either through the HPC Desktop portal
 at `<rc.uab.edu>`__ or through your own personal VNC session. If you are working
@@ -49,10 +71,10 @@ To pull and build the latest version of Heudiconv, run the following commands:
 
 .. code-block:: bash
     
-    singularity build $USER_DATA/heudiconv-0.8.0.sif docker://nipy/heudiconv:0.8.0
+    singularity build $USER_DATA/heudiconv-0.5.4.sif docker://nipy/heudiconv:0.5.4
 
-This command will build Heudiconv version 0.8.0 from DockerHub, convert it to a
-singularity image, and save it in your user data folder as heudiconv-0.8.0.sif.
+This command will build Heudiconv version 0.5.4 from DockerHub, convert it to a
+singularity image, and save it in your user data folder as heudiconv-0.5.4.sif.
 Modify the output path as you see fit to save it where you need it. The download
 and conversion process will take some time, so be patient while everything runs.
 
@@ -115,12 +137,21 @@ each scan found in the given subject and session folder you specify. This
 information will be used to create what is called a heuristic file which will be
 covered later.
 
-The overall command will be:
+**Python:**
+
+.. code-block:: bash
+
+    # set the base dataset directory
+    BASE_DIR=/data/project/genlab/datasets/D01
+
+    heudiconv -s S101 -ss 01 -d $BASE_DIR/dicom/{subject}/ses-{session}/*/*.dcm -o $BASE_DIR/nifti -f convertall -c none --overwrite
+
+**Singularity:**
 
 .. code-block:: bash
 
     singularity run --bind /data/project/genlab/datasets/D01:/base
-    $USER_DATA/heudiconv-0.9.0.sif -s S101 -ss 01 -d
+    $USER_DATA/heudiconv-0.5.4.sif -s S101 -ss 01 -d
     /base/dicom/{subject}/ses-{session}/*/*.dcm -o /base/nifti/
     -f convertall -c none --overwrite
 
@@ -145,6 +176,18 @@ The command, broken down:
    not yet converting
 8. --overwrite: overwrite existing files.
 
+The output of Step 1 is a hidden folder at the path
+``$BASE_DIR/nifti/.heudiconv``. It will contain a folder for each participant
+with a generic ``heuristic.py`` file and a ``dicominfo_ses-**.tsv`` file inside.
+An example can be seen below:
+
+.. image:: images/step1-out.png
+    :width: 300
+    :align: center
+    :alt: Alternative Text
+
+Copy these files to the base directory.
+
 
 Step 2: Create The Heuristic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -154,6 +197,38 @@ proper folders, Heudiconv uses a user-generated file called a heuristic file
 that controls how each scan is sorted into the BIDS framework. Because every
 protocol uses different scans and tasks, the heuristic file is also different
 across protocols. However, once one heuristic is created for a dataset, as long
-as the scans do not change, the heuristic only needs to be created once.
+as the scans do not change, the heuristic only needs to be created once. If
+there is more than one session, and the scans change between sessions, one
+heuristic for each unique session should be created.
 
+If you open the ``heuristic.py`` in a text editor, it will look like this:
 
+.. image:: images/generic-heuristic.png
+    :width: 300
+    :align: center
+    :alt: Generic Heuristic
+
+The ``infotodict`` function is where edits will be made. The first is to create
+keys for the various types of scans. These entries will be used to rename the
+scans to be BIDS-compliant. For example, for our T1-weighted anatomical scan,
+its entry may look like:
+
+.. code-block:: python
+
+    t1 = create_key('sub-{subject}/ses-{session}/anat/sub-{subject}_T1w')
+
+Functional scans, both rest and task, could look like:
+
+.. code-block:: python
+
+    rest = create_key('sub-{subject}/ses-{session}/func/sub-{subject}_task-rest_run-{item:01d}_bold')
+    
+The ``{item:01d}`` tag will automatically number multiple resting or task scans
+within the same session based on acquisition order.
+
+Phase-encoded fieldmaps could be:
+
+.. code-block:: python
+
+    fmap = create_key('sub-{subject}/ses-{session}/fmap/sub-{subject}_dir-{dir}_run-{item:01d}_epi')
+    
