@@ -148,7 +148,7 @@ BIDS-formatted dataset ``D01``. ::
              --cifti-output \
              $USER_DATA/D01/nifti/ \
              $USER_DATA/D01/nifti/derivatives \
-             participant \
+             participant
 
 - The job requests 4 CPUs and 4 GBs of memory per CPU for 50 hours total on the medium partition. 
 - The working directory was placed directly underneath the dataset directory
