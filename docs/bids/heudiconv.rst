@@ -30,14 +30,15 @@ installed on the cluster is:
 
     module load Singularity
 
-To load a specific verison, use ``module spider Singularity`` to view all
+To load a specific version, use ``module spider Singularity`` to view all
 installed Singularity modules and load the one you want.
 
 The container for Heudiconv can be found on their `DockerHub page
 <https://hub.docker.com/r/nipy/heudiconv>`__, and the source code can be found
 on their `github page <https://github.com/nipy/heudiconv>`__. When downloading
-the image file, monitor these pages for updated releases. As of September 2021,
-the latest released version of Heudiconv is 0.9.0.
+the image file, monitor these pages for updated releases. If the updated
+releases do not work correctly, use a previous version and report the issue on
+github.
 
 To begin, open a terminal window on Cheaha either through the HPC Desktop portal
 at `<rc.uab.edu>`__ or through your own personal VNC session. If you are working
@@ -48,10 +49,10 @@ To pull and build the latest version of Heudiconv, run the following commands:
 
 .. code-block:: bash
     
-    singularity pull $USER_DATA/heudiconv-0.9.0.sif docker://nipy/heudiconv:0.9.0
+    singularity build $USER_DATA/heudiconv-0.8.0.sif docker://nipy/heudiconv:0.8.0
 
-This command will pull Heudiconv version 0.9.0 from DockerHub, convert it to a
-singularity image, and save it in your user data folder as heudiconv-0.9.0.sif.
+This command will build Heudiconv version 0.8.0 from DockerHub, convert it to a
+singularity image, and save it in your user data folder as heudiconv-0.8.0.sif.
 Modify the output path as you see fit to save it where you need it. The download
 and conversion process will take some time, so be patient while everything runs.
 
@@ -67,8 +68,8 @@ preferred organization is:
 
     |-- dataset/
         |-- dicom
-        |   |-- subject-01/
-        |   |   |-- [sess-01/]
+        |   |-- S101/
+        |   |   |-- [ses-01/]
         |   |   |   |-- scan-01/
         |   |   |   |   |-- ***001.dcm
         |   |   |   |   |-- ***002.dcm
@@ -77,18 +78,82 @@ preferred organization is:
         |   |   |   |-- scan-02/
         |   |   |       |-- ***.dcm
         |   |   |
-        |   |   |-- [sess-02/]
+        |   |   |-- [ses-02/]
         |   |
-        |   |-- subject-02/
+        |   |-- S102/
         |   |
-        |   |-- subject-03/
+        |   |-- S103/
         |
         |-- nifti (empty)
 
 Inclusion of the session directory level is optional if there is only one
-session per participant. 
+session per participant. The names of the dicom files themselves do not need to
+be altered in any way before running Heudiconv.
 
 If your data is stored in a different format but has a consistent structure
 across all files, this is fine. It is just important that the subject name as
 well as session number (if multiple sessions were acquired) are easily extracted
 from the file path.
+
+
+Running HeuDiConv
+-----------------------------------
+
+In the following example, we will use the given directory structure above. The
+dataset will be named ``D01``, and it's parent directory will be
+``/data/project/genlab/datasets`` to mimic a generic project directory found on
+Cheaha. 
+
+Step 1: Generate Scan Info
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+    If you already have a heuristic file to use with your dataset, skip to Step 3.
+
+The first step in Heudiconv generates a hidden directory with information about
+each scan found in the given subject and session folder you specify. This
+information will be used to create what is called a heuristic file which will be
+covered later.
+
+The overall command will be:
+
+.. code-block:: bash
+
+    singularity run --bind /data/project/genlab/datasets/D01:/base
+    $USER_DATA/heudiconv-0.9.0.sif -s S101 -ss 01 -d
+    /base/dicom/{subject}/ses-{session}/*/*.dcm -o /base/nifti/
+    -f convertall -c none --overwrite
+
+The command, broken down:
+
+1. --bind gives Singularity access to the specified directory and shortens it to
+   /base. This should be the full path to the dataset directory.
+2. Give the path to the singularity Heudiconv image file. The path can be
+   relative or absolute.
+3. -s and -ss: specify the subject(s) and session(s) to process, respectively.
+   These can either be a single entry or a list.
+4. -d: the path to the dicom images for the given subject and session. {subject}
+   and {session} in the path will be replaced by the -s and -ss values,
+   respectively. If a list for either -s or -ss is given, this command will iterate
+   through the list, automatically changing the {subject} and {session} values
+   as needed. From there, glob syntax is used to find all the dicoms in all the
+   scan folders (/*/*.dcm).
+5. -o: the output directory
+6. -f: the heuristic file to use, set to ``convertall`` here because a heuristic
+   has not yet been generated.
+7. -c: the converter to use. None here because we are only generating scan info,
+   not yet converting
+8. --overwrite: overwrite existing files.
+
+
+Step 2: Create The Heuristic
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In order to correctly name and sort the different types of scans into their
+proper folders, Heudiconv uses a user-generated file called a heuristic file
+that controls how each scan is sorted into the BIDS framework. Because every
+protocol uses different scans and tasks, the heuristic file is also different
+across protocols. However, once one heuristic is created for a dataset, as long
+as the scans do not change, the heuristic only needs to be created once.
+
+
