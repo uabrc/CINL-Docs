@@ -23,7 +23,9 @@ Loading the Module
 -------------------------
 Cheaha users can access a variety of installed software through modules. Loading
 the module to use in either an interactive session or in a batch job can be done
-using the following command: ::
+using the following command:
+
+.. code-block::
 
     module load rc/fmriprep/20.2.3
 
@@ -32,7 +34,9 @@ mainly the ``fmriprep`` command.
 
 Required Positional Arguments
 -----------------------------
-The basic form of the ``fmriprep`` command is: ::
+The basic form of the ``fmriprep`` command is:
+
+.. code-block::
 
     fmriprep [options] bids_dir output_dir analysis_level
 
@@ -83,7 +87,9 @@ FreeSurfer License File
 Because FreeSurfer is a proprietary software package, it needs a license file to
 run. A license file for FreeSurfer is provided on Cheaha. Run the following
 command, replacing ``<destination>`` with the location you would like to copy
-the license file to in your chosen workspace. ::
+the license file to in your chosen workspace.
+
+.. code-block::
 
     cp /share/apps/rc/software/FreeSurfer/7.1.1-centos7_x86_64/license.txt
     <destination>
@@ -124,7 +130,9 @@ recon-all is suggested.
 Example Single-Subject Job Script
 ---------------------------------
 This example script was written to process a single subject ``P01`` from
-BIDS-formatted dataset ``D01``. ::
+BIDS-formatted dataset ``D01``.
+
+.. code-block:: bash
     
     #!/bin/bash
     #

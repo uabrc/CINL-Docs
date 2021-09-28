@@ -35,6 +35,7 @@ registration page will appear
 .. image:: images/registration.png
     :width: 300
     :align: center
+    :alt: ''
 
 Fill out all of fields and submit registration. Your account should be ready to
 use.
