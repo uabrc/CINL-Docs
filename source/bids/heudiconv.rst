@@ -521,16 +521,19 @@ anywhere in the json file and should look like:
 .. code-block:: text
 
     "IntendedFor": [
-        "func/func_scan_1.nii.gz"
-        "func/func_scan_2.nii.gz"
-    ]
+        "ses-**/func/func_scan_1.nii.gz",
+        "ses-**/func/func_scan_2.nii.gz"
+    ],
 
-Replace the generic names with the real names of the nifti files. Every fmap
-file needs to have an ``IntendedFor`` field in order to be used for unwarping in
-fmriprep or other similar BIDS apps. For sessions where multiple fieldmaps were
-acquired for separate sets of scans, the ``IntendedFor`` fields will differ and
-care should be taken to make sure the field maps are associated with the correct
-scans.
+Replace the generic names with the real names of the nifti files and session
+directories. If session directories are omitted from the directory structure,
+omit them here as well. 
+
+Every fmap file needs to have an ``IntendedFor`` field in order to be used for
+unwarping in fmriprep or other similar BIDS apps. For sessions where multiple
+fieldmaps were acquired for separate sets of scans, the ``IntendedFor`` fields
+will differ and care should be taken to make sure the field maps are associated
+with the correct scans.
 
 
 Last Steps and Documentation

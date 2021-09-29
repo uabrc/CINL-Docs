@@ -234,3 +234,17 @@ well as an explanation of the FSL format for bvec and bval files can be found
 .. 
     TODO: Add short section on IntendedFor field here once that section is
     written in the HeuDiConv section.
+
+BIDS Validation
+-------------------------
+
+After you convert a dataset to BIDS, you can validate it using a couple of
+tools. First, there is an online validator at
+`<https://bids-standard.github.io/bids-validator/>`__. Select your BIDS output
+dataset folder and it will determine if anything is not BIDS compliant. It does
+not upload any data, so it is safe for PHI.
+
+fmriprep, as its first step, also will perform BIDS validation on any subject it
+is performed on. This can be disabled as a setting if you've already used the
+online tool. It's a good idea to always validate the dataset after conversion
+just in case something needs to be fixed.
