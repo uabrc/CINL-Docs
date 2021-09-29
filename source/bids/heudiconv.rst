@@ -521,8 +521,8 @@ anywhere in the json file and should look like:
 .. code-block:: text
 
     "IntendedFor": [
-        func/func_scan_1.nii.gz
-        func/func_scan_2.nii.gz
+        "func/func_scan_1.nii.gz"
+        "func/func_scan_2.nii.gz"
     ]
 
 Replace the generic names with the real names of the nifti files. Every fmap
