@@ -99,6 +99,7 @@ fmriprep
 
     /fmriprep/intro.rst
     /fmriprep/fmriprep-on-cheaha.rst
+    /fmriprep/examples.rst
 
 About fmriprep
 ----------------------------- 
