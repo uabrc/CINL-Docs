@@ -195,7 +195,6 @@ This example script was written to process all subjects from the
     #SBATCH --time=50:00:00
     #SBATCH --mem-per-cpu=4G
     #SBATCH --mail-type=FAIL
-    #SBATCH --array=1-2
 
     # set the bids-formatted directory. 
     bidsdir=$USER_DATA/D01/nifti/
@@ -207,7 +206,7 @@ This example script was written to process all subjects from the
     module load rc/fmriprep/20.2.3
 
     # run fmriprep
-    fmriprep --work-dir /home/mdefende/Desktop/bids-test/D01/workdir/ \
+    fmriprep --work-dir $USER_DATA/D01/workdir/ \
              --participant-label $pid \
              --output-spaces T1w \
              --fs-license-file $HOME/license.txt \
@@ -218,10 +217,12 @@ This example script was written to process all subjects from the
              $bidsdir/derivatives \
              participant
 
-This script will replicate the fmriprep command for the first two subjects (set
-in the ``#SBATCH array=1-2`` option) in the ``participants.tsv``. Set the max
-array number to the total number of subjects. Choose specific subjects to run
-using the ``--array`` option when submitting the job. 
+This script will replicate the fmriprep command for participants in the
+``participants.tsv`` file. When submitting this job, include the
+``--array=<min>-<max>`` option in the ``sbatch`` command representing the index
+of the participants you want to run. For example, if you want to run the first
+10 participants in the file, use ``--array=1-10``, whereas if you want to run
+the 7th and 10th participant only, use ``--array=7,10``. 
 
 This script can be placed in and run from a ``code`` folder in the BIDS-sorted
 ``nifti`` folder to maintain BIDS compliance.
