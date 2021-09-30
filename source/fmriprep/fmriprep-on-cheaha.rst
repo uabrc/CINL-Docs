@@ -155,7 +155,7 @@ BIDS-formatted dataset ``D01``.
              --fs-license-file $HOME/license.txt \
              --n-cpus 4 \
              --omp-nthreads 4 \
-             --cifti-output \
+             --cifti-output 91k \
              $USER_DATA/D01/nifti/ \
              $USER_DATA/D01/nifti/derivatives \
              participant
@@ -170,3 +170,58 @@ BIDS-formatted dataset ``D01``.
 This script can be submitted to the scheduler using ``sbatch <script.sh>`` where
 script.sh is the full path of the script (or just the script name if the
 terminal working directory contains the script).
+
+
+Example Array Job Script
+-----------------------------------
+
+SLURM job arrays are scripts made to easily replicate a job to be performed
+across multiple inputs (i.e. multiple participants) while not taxing the job
+scheduler. Read more about SLURM job arrays at their `documentation
+<https://slurm.schedmd.com/job_array.html>`__.
+
+This example script was written to process all subjects from the
+``participants.tsv`` file in BIDS-formatted dataset ``D01``.
+
+.. code-block:: bash
+
+    #!/bin/bash
+    #
+    #SBATCH --job-name=fmriprep-%a
+    #SBATCH --output=fmriprep-%A-%a.txt
+    #SBATCH --ntasks=1
+    #SBATCH --cpus-per-task=5
+    #SBATCH --partition=medium
+    #SBATCH --time=50:00:00
+    #SBATCH --mem-per-cpu=4G
+    #SBATCH --mail-type=FAIL
+    #SBATCH --array=1-2
+
+    # set the bids-formatted directory. 
+    bidsdir=$USER_DATA/D01/nifti/
+
+    # set the participant id from the participants.tsv file in the bidsdir
+    pid=$(awk "NR==$(($SLURM_ARRAY_TASK_ID+1)){print;exit}" $bidsdir/participants.tsv | cut -f 1)
+
+    # load the module
+    module load rc/fmriprep/20.2.3
+
+    # run fmriprep
+    fmriprep --work-dir /home/mdefende/Desktop/bids-test/D01/workdir/ \
+             --participant-label $pid \
+             --output-spaces T1w \
+             --fs-license-file $HOME/license.txt \
+             --n-cpus 4 \
+             --omp-nthreads 4 \
+             --cifti-output 91k \
+             $bidsdir \
+             $bidsdir/derivatives \
+             participant
+
+This script will replicate the fmriprep command for the first two subjects (set
+in the ``#SBATCH array=1-2`` option) in the ``participants.tsv``. Set the max
+array number to the total number of subjects. Choose specific subjects to run
+using the ``--array`` option when submitting the job. 
+
+This script can be placed in and run from a ``code`` folder in the BIDS-sorted
+``nifti`` folder to maintain BIDS compliance.
