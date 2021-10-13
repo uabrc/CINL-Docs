@@ -90,9 +90,8 @@ and conversion process will take some time, so be patient while everything runs.
 Initial Folder Structure
 ------------------------------------
 
-Once the Singularity image has been downloaded, make sure your DICOM files are
-organized consistently across the project you are converting. For instance, a
-preferred organization is:
+To begin, make sure your DICOM files are organized consistently across the
+project you are converting. For instance, a preferred organization is:
 
 .. code-block:: text
 
@@ -120,10 +119,10 @@ Inclusion of the session directory level is optional if there is only one
 session per participant. The names of the dicom files themselves do not need to
 be altered in any way before running Heudiconv.
 
-If your data is stored in a different format but has a consistent structure
-across all files, this is fine. It is just important that the subject name as
-well as session number (if multiple sessions were acquired) are easily extracted
-from the file path.
+If your data is stored in a different format but has a consistent structure,
+that is fine. It is just important that the subject name as well as session
+number (if multiple sessions were acquired) are easily extracted from the file
+path.
 
 
 Running HeuDiConv
@@ -141,9 +140,9 @@ Step 1: Generate Scan Info
     If you already have a heuristic file to use with your dataset, skip to Step 3.
 
 The first step in Heudiconv generates a hidden directory with information about
-each scan found in the given subject and session folder you specify. This
-information will be used to create what is called a heuristic file which will be
-covered later.
+each scan found in the subject and session folder you specify. This information
+will be used to create what is called a heuristic file which will be covered in
+Step 2. To generate this hidden folder, run:
 
 **Python:**
 
@@ -195,7 +194,7 @@ An example can be seen below:
     :alt: Alternative Text
 
 
-Copy these files to the base directory.
+Copy these files to the dataset directory.
 
 
 Step 2: Modify The Heuristic

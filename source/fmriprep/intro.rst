@@ -1,5 +1,3 @@
-.. _intro-fmriprep:
-
 Introduction to fmriprep
 ========================
 
