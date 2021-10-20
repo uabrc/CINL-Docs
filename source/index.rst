@@ -4,7 +4,7 @@
 Welcome to UAB CINL's documentation!
 ========================================
 
-The Civitan International Neuroimaging Laboratory provides a core resource at
+The 'Civitan International Neuroimaging Laboratory https://www.uab.edu/medicine/cinl/' provides a core resource at
 UAB for state-of-the-art MRI neuroimaging experiments and analyses for examining
 brain and body anatomy and function both in health and disease. 
 
