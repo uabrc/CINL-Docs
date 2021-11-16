@@ -18,20 +18,28 @@ BIDS-formatted dataset ``D01`` stored in ``$USER_DATA``.
     #SBATCH --time=50:00:00
     #SBATCH --mem-per-cpu=5000
     #SBATCH --mail-type=FAIL
-
+    
+    # Users should only need to change the dataset_dir and the participant below to run this script.
+    
+    # set the path to the dataset directory. This is the parent to the BIDS-formatted nifti directory.
+    dataset_dir=$USER_DATA/D01
+    
+    # set the name of the participant
+    participant=P01
+    
     # load the module
     module load rc/fmriprep/20.2.3
-
+    
     # run fmriprep
-    fmriprep --work-dir $USER_DATA/D01/workdir/ \
-             --participant-label P01 \
+    fmriprep --work-dir $dataset_dir/workdir/ \
+             --participant-label $participant \
              --output-spaces T1w \
              --fs-license-file $HOME/license.txt \
              --n-cpus 4 \
              --omp-nthreads 4 \
              --cifti-output 91k \
-             $USER_DATA/D01/nifti/ \
-             $USER_DATA/D01/nifti/derivatives \
+             $dataset_dir/nifti/ \
+             $dataset_dir/nifti/derivatives \
              participant
 
 - The job requests 4 CPUs and 4 GBs of memory per CPU for 50 hours total on the medium partition. 
@@ -69,18 +77,23 @@ This example script was written to process all subjects from the
     #SBATCH --time=50:00:00
     #SBATCH --mem-per-cpu=4G
     #SBATCH --mail-type=FAIL
+    
+    # Users should only need to change the dataset_dir to run this script.
 
-    # set the bids-formatted directory. 
-    bidsdir=$USER_DATA/D01/nifti/
+    # set the path to the dataset directory. This is the parent to the BIDS-formatted nifti directory.
+    dataset_dir=$USER_DATA/D01
 
+    # set the path to the BIDS-formatted nifti directory
+    bidsdir=$dataset_dir/nifti/
+    
     # set the participant id from the participants.tsv file in the bidsdir
     pid=$(awk "NR==$(($SLURM_ARRAY_TASK_ID+1)){print;exit}" $bidsdir/participants.tsv | cut -f 1)
-
+    
     # load the module
     module load rc/fmriprep/20.2.3
 
     # run fmriprep
-    fmriprep --work-dir $USER_DATA/D01/workdir/ \
+    fmriprep --work-dir $dataset_dir/workdir/ \
              --participant-label $pid \
              --output-spaces T1w \
              --fs-license-file $HOME/license.txt \
