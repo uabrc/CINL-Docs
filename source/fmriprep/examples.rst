@@ -16,7 +16,7 @@ BIDS-formatted dataset ``D01`` stored in ``$USER_DATA``.
     #SBATCH --cpus-per-task=4
     #SBATCH --partition=medium
     #SBATCH --time=50:00:00
-    #SBATCH --mem-per-cpu=5000
+    #SBATCH --mem-per-cpu=5G
     #SBATCH --mail-type=FAIL
     
     # Users should only need to change the dataset_dir and the participant below to run this script.
@@ -72,10 +72,10 @@ This example script was written to process all subjects from the
     #SBATCH --job-name=fmriprep-%a
     #SBATCH --output=fmriprep-%A-%a.txt
     #SBATCH --ntasks=1
-    #SBATCH --cpus-per-task=5
+    #SBATCH --cpus-per-task=4
     #SBATCH --partition=medium
     #SBATCH --time=50:00:00
-    #SBATCH --mem-per-cpu=4G
+    #SBATCH --mem-per-cpu=5G
     #SBATCH --mail-type=FAIL
     
     # Users should only need to change the dataset_dir to run this script.
