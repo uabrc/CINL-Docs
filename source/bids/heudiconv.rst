@@ -12,16 +12,18 @@ further information <https://heudiconv.readthedocs.io/en/latest/index.html>`__.
 Installation
 -------------------------------
 
-There are multiple methods to install Heudiconv including as a Python library or
-as a standalone Singularity container. How you interface with Heudiconv changes
-slightly based on how you install it, but both installation methods will be
-covered here.
+HeuDiConv works best when installed as a Python library in an Anaconda virtual
+environment. For more information on creating and using Anaconda virtual
+environments on the cluster, visit the Research Computing Docs.
 
-As a Python Library
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. MKD: add the hyperlink here once we've gotten it set in the uabrc docs.
 
-First, load an Anaconda module on Cheaha and create a virtual environment. From
-there, you can use ``pip`` to install the Heudiconv library like:
+HeuDiConv Installation
+^^^^^^^^^^^^^^^^^^^^^^
+
+First, load an Anaconda module on Cheaha, create a virtual environment, and
+activate it. From there, you can use ``pip`` to install the Heudiconv library
+using:
 
 .. code-block:: bash
 
@@ -29,62 +31,30 @@ there, you can use ``pip`` to install the Heudiconv library like:
     
     # create and/or activate your virtual environment here
 
-    pip install heudiconv[all]
+    pip install heudiconv==0.9.0
+
+HeuDiConv's most recent release is version 0.10.0 but has not been tested on
+Cheaha. Version 0.9.0 is currently suggested. 
 
 This will download the latest version of Heudiconv. After installation, you can
 use the library through the ``heudiconv`` command.
 
-In addition you will need to download the ``dcm2niix`` library to actually
-convert from DICOM to nifti.
+.. note::
+
+    In some cases, HeuDiConv will download to your ``~/.local/bin`` directory
+    and will not be automatically added to your bash path. Use
+    ``PATH=$PATH:~/.local/bin`` to fix this issue if it arises.
+
+dcm2niix Installation
+^^^^^^^^^^^^^^^^^^^^^^
+
+In addition you will need to download the ``dcm2niix`` library to your virtual
+environment to actually convert from DICOM to nifti. You can access this library
+at conda-forge using the following command:
 
 .. code-block:: bash
 
     conda install -c conda-forge dcm2niix
-
-
-As a Container
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Containers are stand-alone instances that provide all the necessary dependencies
-for a given program out-of-the-box so no management of external programs is
-required. Using this method, you will download a Singularity image file
-containing Heudiconv and all of its dependencies in a single location in your
-personal user space or a shared lab project space. More information on using
-Singularity containers can be found at their `documentation
-<https://sylabs.io/guides/3.8/user-guide/>`__.
-
-In order to use Singularity on Cheaha, you will need to load the module. You
-only need to load the module once when opening a new terminal window or in a job
-submission script. The command to load the latest version of Singularity
-installed on the cluster is:
-
-.. code-block:: bash
-
-    module load Singularity
-
-To load a specific version, use ``module spider Singularity`` to view all
-installed Singularity modules and load the one you want.
-
-The container for Heudiconv can be found on their `DockerHub page
-<https://hub.docker.com/r/nipy/heudiconv>`__, and the source code can be found
-on their `github page <https://github.com/nipy/heudiconv>`__. Currently, the
-latest working Singularity container is version 0.5.4.
-
-To begin, open a terminal window on Cheaha either through the HPC Desktop portal
-at `<rc.uab.edu>`__ or through your own personal VNC session. If you are working
-through a personal VNC session, be sure to start an interactive session in your
-terminal first to avoid running anything on the login node. 
-
-To pull and build the latest version of Heudiconv, run the following commands:
-
-.. code-block:: bash
-    
-    singularity build $USER_DATA/heudiconv-0.5.4.sif docker://nipy/heudiconv:0.5.4
-
-This command will build Heudiconv version 0.5.4 from DockerHub, convert it to a
-singularity image, and save it in your user data folder as heudiconv-0.5.4.sif.
-Modify the output path as you see fit to save it where you need it. The download
-and conversion process will take some time, so be patient while everything runs.
 
 
 Initial Folder Structure
@@ -117,7 +87,7 @@ project you are converting. For instance, a preferred organization is:
 
 Inclusion of the session directory level is optional if there is only one
 session per participant. The names of the dicom files themselves do not need to
-be altered in any way before running Heudiconv.
+be altered in any way before running HeuDiConv.
 
 If your data is stored in a different format but has a consistent structure,
 that is fine. It is just important that the subject name as well as session
@@ -128,10 +98,9 @@ path.
 Running HeuDiConv
 -----------------------------------
 
-In the following example, we will use the given directory structure above. The
-dataset will be named ``D01``, and it's parent directory will be
-``/data/project/genlab/datasets`` to mimic a generic project directory found on
-Cheaha. 
+While going through these steps, we will assume the directory tree is structured
+as above. If your dataset directory structure is different, the command will
+need to be adjusted to account for it.
 
 Step 1: Generate Scan Info
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -144,49 +113,39 @@ each scan found in the subject and session folder you specify. This information
 will be used to create what is called a heuristic file which will be covered in
 Step 2. To generate this hidden folder, run:
 
-**Python:**
-
 .. code-block:: bash
 
-    # set the base dataset directory
-    BASE_DIR=/data/project/genlab/datasets/D01
+    heudiconv -s <subject> -ss <session> -d <dataset_path>/dicom/{subject}/ses-{session}/*/*.dcm -o <dataset_path>/nifti -f convertall -c none --overwrite
 
-    heudiconv -s S101 -ss 01 -d $BASE_DIR/dicom/{subject}/ses-{session}/*/*.dcm -o $BASE_DIR/nifti -f convertall -c none --overwrite
+.. note::
 
-**Singularity:**
-
-.. code-block:: bash
-
-    singularity run --bind /data/project/genlab/datasets/D01:/base
-    $USER_DATA/heudiconv-0.5.4.sif -s S101 -ss 01 -d
-    /base/dicom/{subject}/ses-{session}/*/*.dcm -o /base/nifti/
-    -f convertall -c none --overwrite
+    For any command in this guide, replace anything inside ``<>`` with the
+    necessary information. For instance, if the given subject name is S100,
+    ``<subject>`` would be replaced with ``S100`` here.
 
 The command, broken down:
 
-1. --bind gives Singularity access to the specified directory and shortens it to
-   /base. This should be the full path to the dataset directory.
-2. Give the path to the singularity Heudiconv image file. The path can be
-   relative or absolute.
-3. -s and -ss: specify the subject(s) and session(s) to process, respectively.
-   These can either be a single entry or a list.
-4. -d: the path to the dicom images for the given subject and session. {subject}
-   and {session} in the path will be replaced by the -s and -ss values,
-   respectively. If a list for either -s or -ss is given, this command will iterate
-   through the list, automatically changing the {subject} and {session} values
-   as needed. From there, glob syntax is used to find all the dicoms in all the
-   scan folders (/*/*.dcm).
-5. -o: the output directory
-6. -f: the heuristic file to use, set to ``convertall`` here because a heuristic
-   has not yet been generated.
-7. -c: the converter to use. None here because we are only generating scan info,
-   not yet converting
-8. --overwrite: overwrite existing files.
+1. ``<dataset_path>`` is the path to the dataset directory. We can use this
+   variable in the main command to make it more succinct.
+2. ``-s`` and ``-ss``: specify the subject(s) and session(s) to process
+   respectively. These can either be a single entry or a list.
+3. ``-d``: the path to the dicom images for the given subject and session.
+   {subject} and {session} in the path will be replaced by the -s and -ss
+   values, respectively. If a list for either -s or -ss is given, this command
+   will iterate through the list, automatically changing the {subject} and
+   {session} values as needed. From there, glob syntax is used to find all the
+   dicoms in all the scan folders (the ``/*/*.dcm`` part).
+4. ``-o``: the output directory
+5. ``-f``: the heuristic file to use, set to ``convertall`` here because a
+   heuristic has not yet been generated.
+6. ``-c``: the converter to use. None here because we are only generating scan
+   info, not yet converting
+7. ``--overwrite``: overwrite existing files.
 
 The output of Step 1 is a hidden folder at the path
-``$BASE_DIR/nifti/.heudiconv``. It will contain a folder for each participant
-with a generic ``heuristic.py`` file and a ``dicominfo_ses-**.tsv`` file inside.
-An example can be seen below:
+``<dataset_path>/nifti/.heudiconv``. It will contain a folder for each
+participant with a generic ``heuristic.py`` file and a ``dicominfo_ses-**.tsv``
+file inside. An example can be seen below:
 
 .. image:: images/step1-out.png
     :width: 500
@@ -194,7 +153,7 @@ An example can be seen below:
     :alt: Alternative Text
 
 
-Copy these files to the dataset directory.
+Copy the ``heuristic.py`` and ``dicominfo_ses-**.tsv`` files to the dataset directory.
 
 
 Step 2: Modify The Heuristic
@@ -209,10 +168,11 @@ as the scans do not change, the heuristic only needs to be created once. If
 there is more than one session, and the scans change between sessions, one
 heuristic for each unique session should be created.
 
-If you open the ``heuristic.py`` in a text editor, it will look like this:
+If you open the ``heuristic.py`` in a text editor, it will look similar to this:
 
 .. code-block:: python
 
+   ########################## DO NOT CHANGE ##############################
    import os
 
    def create_key(template, outtype=('nii.gz',), annotation_classes=None):
@@ -220,7 +180,8 @@ If you open the ``heuristic.py`` in a text editor, it will look like this:
            raise ValueError('Template must be a valid format string')
        return template, outtype, annotation_classes
 
-
+   #######################################################################
+   
    def infotodict(seqinfo):
        """Heuristic evaluator for determining which runs belong where
 
@@ -231,90 +192,65 @@ If you open the ``heuristic.py`` in a text editor, it will look like this:
        seqitem: run number during scanning
        subindex: sub index within group
        """
-
+       ########################## Scan Keys ##############################
        data = create_key('run{item:03d}')
        info = {data: []}
-       last_run = len(seqinfo)
-
-       for s in seqinfo:
+   
+       ################# Associate Keys with Scans #######################
+       for idx, s in enumerate(seqinfo):
            info[data].append(s.series_id)
        return info
 
 
+Creating Scan Keys
+~~~~~~~~~~~~~~~~~~
+
 The ``infotodict`` function is where edits will be made. The first is to create
 keys for the various types of scans. These entries will be used to rename the
-scans to be BIDS-compliant. Examples for T1w, rest BOLD, and a
-spin-echo fieldmap can be see below.
+scans to be BIDS-compliant, including the full path to the scan. 
+
+For the parts of the BIDS name that are variable, such as the subject name,
+session number, or run number, the value part of the key-value pair should be
+placed in ``{}``. These values are then specified in the for loop in the next
+section. The ``{item:01d}`` tag will automatically number multiple scans of the
+same type within the same session based on acquisition order.
+
+Examples for T1w, resting-state BOLD, and a spin-echo fieldmap can be see below.
+
 
 .. code-block:: python
-
+    
+    ########################## Scan Keys ##############################
     # T1w
     t1 = create_key('sub-{subject}/ses-{session}/anat/sub-{subject}_T1w')
 
     # multiband resting state
-    rest = create_key('sub-{subject}/ses-{session}/func/sub-{subject}_task-rest_run-{item:01d}_bold')
-    rest_sbref = create_key('sub-{subject}/ses-{session}/func/sub-{subject}_task-rest_run-{item:01d}_sbref')
+    rest = create_key('sub-{subject}/ses-{session}/func/sub-{subject}_task-rest_dir-{dir}_run-{item:01d}_bold')
+    rest_sbref = create_key('sub-{subject}/ses-{session}/func/sub-{subject}_task-rest_dir-{dir}_run-{item:01d}_sbref')
     
     # phase encoded spin-echo fieldmap
     fmap = create_key('sub-{subject}/ses-{session}/fmap/sub-{subject}_dir-{dir}_run-{item:01d}_epi')
     
-The ``{item:01d}`` tag will automatically number multiple resting or task scans
-within the same session based on acquisition order.    
+    info = {t1:[], rest:[], rest_sbref:[], fmap:[]}
+
+The last line initializes a ``dict`` python object named ``info`` used in the
+next section. Include an entry for every scan type you named above it.     
     
 In all cases, the names passed to the ``create_key`` function should be
 templated to the BIDS format described in the :ref:`Example Name Formats`
 section or on the main BIDS documentation.
 
-So for example, you are mapping a session that collected a T1, T2, two multiband
-resting state scans, one multiband emotion recognition task named Emotion, two
-multiband diffusion scans, and a pair of spin-echo fieldmaps. A folder with
-those scans could look like the following:
+Associating Keys with Scan Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. image:: images/dicom-folder-example.png
-    :width: 500
-    :align: center
-    :alt: Alternative Text
+The next  section loops through the scan directories and sorts the scans into
+the initialized ``info`` object. Here, you will using info from the
+``dicominfo_ses-**.tsv`` file copied earlier to create matching criteria to
+correctly sort scans. If you open the tsv file, you will see something that
+looks like:
 
-The section mapping those names to specific keys in the heuristic file would look like:
-
-.. code-block:: python 
-
-    def infotodict(seqinfo):
-       """Heuristic evaluator for determining which runs belong where
-
-       allowed template fields - follow python string module:
-
-       item: index within category
-       subject: participant id
-       seqitem: run number during scanning
-       subindex: sub index within group
-       """
-
-       t1 = create_key('sub-{subject}/{session}/anat/sub-{subject}_T1w')
-       t2 = create_key('sub-{subject}/{session}/anat/sub-{subject}_T2w')
-       fmap = create_key('sub-{subject}/{session}/fmap/sub-{subject}_dir-{dir}_run-{item:01d}_epi')
-       rest = create_key('sub-{subject}/{session}/func/sub-{subject}_task-rest_run-{item:01d}_bold')
-       emotion = create_key('sub-{subject}/{session}/func/sub-{subject}_task-Emotion_run-{item:01d}_bold')
-       rest_sbref = create_key('sub-{subject}/{session}/func/sub-{subject}_task-rest_run-{item:01d}_sbref')
-       emotion_sbref = create_key('sub-{subject}/{session}/func/sub-{subject}_task-Emotion_run-{item:01d}_sbref')
-       dwi = create_key('sub-{subject}/{session}/dwi/sub-{subject}_dir-{dir}_run-{item:01d}_dwi')
-       dwi_sbref = create_key('sub-{subject}/{session}/dwi/sub-{subject}_dir-{dir}_run-{item:01d}_sbref')
-
-       info = {t1:[], t2:[], fmap:[], rest:[], emotion:[], rest_sbref:[], emotion_sbref:[], dwi:[], dwi_sbref:[]}
-
-The last line initializes a ``dict`` python object used in the next section.
-Include an entry for every scan type you named above it.
-
-The following section loops through the scan directories and sorts the scans
-into the initialized ``dict`` object. Here, you will create matching criteria
-for each scan for a correct sort using info from the ``dicominfo_ses-**.tsv``
-file copied earlier. If you open the tsv file, you will see something that looks
-like:
-
-.. image:: images/example-info-tsv.png
-    :width: 800
-    :align: center
-    :alt: Example TSV
+.. csv-table:: Example TSV
+    :file: partial-dicominfo_ses-01.csv
 
 This gives information taken from the dicom headers of each scan in the session.
 Use it to create criteria to match the dicom scans to the keys created above.
@@ -325,104 +261,39 @@ matches those qualities, so we can match on those fields. The matching command
 for this would look like:
 
 .. code-block:: python
+    
+    ################# Associate Keys with Scans #######################
+    for idx, s in enumerate(seqinfo):
+        if (s.dim4 == 420) and ('REST' in s.series_id):
+            info[rest].append({'item': s.series_id})
 
-    if (s.dim4 == 420) and ('REST' in s.series_id):
-        info[rest].append({'item': s.series_id})
+    return info
 
-This will match any scans that have 420 volumes ``'REST'`` in their ID to the
-``rest`` key we made earlier. In addition, because the ``rest`` key includes an
-``item`` description in the value name, it appends the ``series_id`` for the
-matched scan to the ``rest`` field in the ``info`` dictionary. Looking back at
-the name, this will incrementally increase the run number for the scans with the
-same name and acquisition parameters. If multiple fields need to be substituted
-for in the value name (such as ``dir`` and ``run`` for the dwi scans), they are
-both included as a comma-separated list in the ``append`` command.
+This will match any scans that have 420 volumes and ``'REST'`` in their ID to
+the ``rest`` key we made earlier. Here, the ``series_id`` field is assigned to
+``item`` which the key will use to change the run number, and the scan will be
+appended to the ``rest`` list. If there is only one run of a given scan in a
+session (such as a T1), you don't need to use the ``append`` command and can
+just assign the ``series_id`` directly (see the T1w field in the :ref:`Example
+Heuristic`). At least one ``if`` statement should exist for each scan type in
+the session.
+
+Altering Subfields in the Key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Other subfields besides run number can be changed using the keys and
+corresponding ``if`` statements. For instance, if you are running resting state
+scans in both AP and PA directions (denoted by the ``dir`` key in a BIDS name),
+this field should be added to the key, and two ``if`` statements should be added
+to the loop, one for each direction. If multiple fields need to be substituted
+for in the value name (such as the ``item`` and ``dir`` field for multiple
+functional scans), they are both included as a comma-separated list in the
+``append`` command. See the :ref:`Example Heuristic` for an example.
 
 For T1w and T2w scans where post-acquisition normalization occurs at the
 scanner, two versions may be available for BIDS sorting. If you only want to
 include the normalized version, match for ``'NORM'`` in the ``image_type``
-field.
-
-The full heuristic file for this example, including the matching criteria, can
-be seen below:
-
-.. code-block:: python
-   
-   import os
-
-   def create_key(template, outtype=('nii.gz',), annotation_classes=None):
-       if template is None or not template:
-           raise ValueError('Template must be a valid format string')
-       return template, outtype, annotation_classes
-
-
-   def infotodict(seqinfo):
-       """Heuristic evaluator for determining which runs belong where
-
-       allowed template fields - follow python string module:
-
-       item: index within category
-       subject: participant id
-       seqitem: run number during scanning
-       subindex: sub index within group
-       """
-
-       t1 = create_key('sub-{subject}/{session}/anat/sub-{subject}_{session}_T1w')
-       t2 = create_key('sub-{subject}/{session}/anat/sub-{subject}_{session}_T2w')
-       fmap = create_key('sub-{subject}/{session}/fmap/sub-{subject}_{session}_dir-{dir}_run-{item:01d}_epi')
-       rest = create_key('sub-{subject}/{session}/func/sub-{subject}_{session}_task-rest_run-{item:01d}_bold')
-       rest_sbref = create_key('sub-{subject}/{session}/func/sub-{subject}_{session}_task-rest_run-{item:01d}_sbref')
-       emotion = create_key('sub-{subject}/{session}/func/sub-{subject}_{session}_task-Emotion_run-{item:01d}_bold')
-       emotion_sbref = create_key('sub-{subject}/{session}/func/sub-{subject}_{session}_task-Emotion_run-{item:01d}_sbref')
-       dwi = create_key('sub-{subject}/{session}/dwi/sub-{subject}_{session}_dir-{dir}_run-{item:01d}_dwi')
-       dwi_sbref = create_key('sub-{subject}/{session}/dwi/sub-{subject}_{session}_dir-{dir}_run-{item:01d}_sbref')
-
-       info = {t1:[], t2:[], fmap:[], rest:[], emotion:[], rest_sbref:[], emotion_sbref:[], dwi:[], dwi_sbref:[]}
-
-       for idx, s in enumerate(seqinfo):
-           # match T1 and T2 scans. No appending due to only wanting a single of
-           # each type
-           if (s.dim3 == 208) and ('T1w' in s.protocol_name) and ('NORM' in s.image_type):
-               info[t1] = [s.series_id]
-           if (s.dim3 == 208) and ('T2w' in s.protocol_name) and ('NORM' in s.image_type):
-               info[t2] = [s.series_id]
-           
-           # match phase-encoded fieldmaps including direction
-           if (s.dim4 == 3) and ('SpinEchoFieldMap_AP' in s.protocol_name):
-               info[fmap].append({'item': s.series_id, 'dir': 'AP'})
-           if (s.dim4 == 3) and ('SpinEchoFieldMap_PA' in s.protocol_name):
-               info[fmap].append({'item': s.series_id, 'dir': 'PA'})
-           
-           # match full functional scans
-           if (s.dim4 == 176) and ('EMOTION' in s.dcm_dir_name):
-               info[emotion].append({'item': s.series_id})
-           if (s.dim4 == 420) and ('REST' in s.dcm_dir_name):
-               info[rest].append({'item': s.series_id})
-           
-           # match full diffusion scans including direction
-           if (s.dim4 == 99) and ('dMRI' in s.dcm_dir_name) and ('AP' in s.dcm_dir_name):
-               info[dwi].append({'item': s.series_id, 'dir':'AP'})
-           if (s.dim4 == 99) and ('dMRI' in s.dcm_dir_name) and ('PA' in s.dcm_dir_name):
-               info[dwi].append({'item': s.series_id, 'dir':'PA'})
-           
-           # match diffusion SBRef including direction to match the full dwi
-           # scan names
-           if (s.dim4 == 1) and ('dMRI' in s.dcm_dir_name) and ('SBRef' in s.dcm_dir_name) and ('AP' in s.dcm_dir_name):
-               info[dwi_sbref].append({'item': s.series_id, 'dir':'AP'})
-           if (s.dim4 == 1) and ('dMRI' in s.dcm_dir_name) and ('SBRef' in s.dcm_dir_name) and ('PA' in s.dcm_dir_name):
-               info[dwi_sbref].append({'item': s.series_id, 'dir':'PA'})
-           
-           # match functional SBRef
-           if (s.dim4 == 1) and ('REST' in s.dcm_dir_name) and ('SBRef' in s.dcm_dir_name):
-               info[rest_sbref].append({'item': s.series_id})
-           if (s.dim4 == 1) and ('Emotion' in s.dcm_dir_name) and ('SBRef' in s.dcm_dir_name):
-               info[emotion_sbref].append({'item': s.series_id})
-       return info
-
-
-       for s in seqinfo:
-           info[data].append(s.series_id)
-       return info
+field in your ``if`` statement.
 
 From here, you can delete the tsv file as it is no longer necessary.
 
@@ -434,70 +305,20 @@ The next step is performing the conversion. The commands for this look very
 similar to those in Step 1, but have a couple of options changed. These can be
 seen below.
 
-
-**Python:**
-
 .. code-block:: bash
 
     # set the base dataset directory
     BASE_DIR=/data/project/genlab/datasets/D01
 
-    heudiconv -s S101 -ss 01 -d $BASE_DIR/dicom/{subject}/ses-{session}/*/*.dcm
-    -o $BASE_DIR/nifti -f $BASE_DIR/heuristic.py -c dcm2niix -b --overwrite
-
-**Singularity:**
-
-.. code-block:: bash
-
-    singularity run --bind /data/project/genlab/datasets/D01:/base
-    $USER_DATA/heudiconv-0.5.4.sif -s S101 -ss 01 -d
-    /base/dicom/{subject}/ses-{session}/*/*.dcm -o /base/nifti/
-    -f $BASE_DIR/heuristic.py -c dcm2niix -b --overwrite
+    heudiconv -s <subject> -ss <session> -d
+    <dataset_path>/dicom/{subject}/ses-{session}/*/*.dcm -o <dataset_path>/nifti -f <dataset_path>/heuristic.py -c dcm2niix -b --overwrite
 
 The changes are ``-f`` which now points to the new heuristic file, ``-c`` which
 specifies ``dcm2niix`` as the converter, and ``-b`` which sets the output to be
 in BIDS format.
 
-The output file structure for the ``anat``, ``fmap``, ``func``, and ``dwi``
-folders can be seen below.
-
-**D01/nifti/sub-S101/ses-01/anat:**
-
-.. image:: images/anat-output.png
-    :width: 800
-    :align: center
-    :alt: anat output
-
----------------
-
-**D01/nifti/sub-S101/ses-01/fmap:**
-
-.. image:: images/fmap-output.png
-    :width: 800
-    :align: center
-    :alt: fmap output
-
----------------
-
-**D01/nifti/sub-S101/ses-01/func:**
-
-.. image:: images/func-output.png
-    :width: 800
-    :align: center
-    :alt: func output
-
----------------
-
-**D01/nifti/sub-S101/ses-01/dwi:**
-
-.. image:: images/dwi-output.png
-    :width: 800
-    :align: center
-    :alt: dwi output
-
-
 Step 4: Cleanup
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 The last step involves removing an unnecessary field from a json file that could
 cause BIDS validation to fail (depending on which Heudiconv version you are
@@ -506,9 +327,9 @@ diffusion scans they should be applied to during distortion correction.
 
 First, each type of functional scan will have an associated ``*_bold.json`` file
 in the main ``nifti`` folder. Open it in a json file editor such as Atom
-(available in Applications > Accessories on Cheaha) or VScode. Remove the
-"CogAtlasID" field if its entry is only "TODO". For later versions of Heudiconv,
-it is in an acceptable form of a URL so can be left alone.
+(available in Applications > Accessories on Cheaha). Remove the "CogAtlasID"
+field if its entry is only "TODO". For later versions of Heudiconv, it is in an
+acceptable form of a URL so can be left alone.
 
 Lastly, you need to associate the fieldmaps with their corresponding scans. This
 can be done manually or through a custom script. For the manual process, open
@@ -520,8 +341,8 @@ anywhere in the json file and should look like:
 .. code-block:: text
 
     "IntendedFor": [
-        "ses-**/func/func_scan_1.nii.gz",
-        "ses-**/func/func_scan_2.nii.gz"
+        "ses-01/func/func_scan_1.nii.gz",
+        "ses-01/func/func_scan_2.nii.gz"
     ],
 
 Replace the generic names with the real names of the nifti files and session
@@ -535,13 +356,40 @@ will differ and care should be taken to make sure the field maps are associated
 with the correct scans.
 
 
-Last Steps and Documentation
-------------------------------------
+Optional Steps and Documentation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 While the output of Heudiconv is a BIDS-compliant dataset and can be used
 immediately, files such as the dataset_description.json, the main task jsons,
 and the participant tsv and json files are not automatically filled out.
 Additionally, while the individual events.json files for each individual task
 scan are generated, they will need to be filled out by the researcher. More
-information about the task events files can be found `here <https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/05-task-events.html>`__.
+information about the task events files can be found `here
+<https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/05-task-events.html>`__.
 
+Resulting File Permissions
+--------------------------
+
+HeuDiConv has been found to automatically alter file permissions for the
+resulting niftis and jsons to where these files are read-only for owners,
+groups, and everyone. This can cause issues for software such as fmriprep that
+needs write permission for some of these files. If you are working with a group
+in a project directory and multiple people need to be able to use the
+BIDS-sorted data, the person who runs HeuDiConv (the owner of the created files)
+will need to add user and group write permissions for each json and nifti output
+file after HeuDiConv completes. To add these permissions for all files within a
+subject's BIDS-sorted directory, you can use the following command:
+
+.. code-block:: bash
+
+    find <path/to/BIDS/subject> -type f -exec chmod ug+w {} \;
+
+Rerunning HeuDiConv
+-------------------
+
+After running, HeuDiConv stores a copy of the heuristic file that was used for
+conversion. Further runs default to using this copied heuristic instead of the
+heuristic passed into the command. This means any changes to you made to the
+heuristic will not be applied. If HeuDiConv needs to be rerun due to a change in
+the heuristic file such as adding key-value pairs to the scan names, delete the
+contents of the ``.heudiconv`` directory for the subject you are rerunning beforehand.
