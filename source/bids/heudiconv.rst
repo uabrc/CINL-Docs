@@ -42,7 +42,8 @@ use the library through the ``heudiconv`` command.
 .. note::
 
     In some cases, HeuDiConv will download to your ``~/.local/bin`` directory
-    and will not be automatically added to your bash path. Use
+    and will not be automatically added to your bash path. This will result in a
+    ``-bash: heudiconv: command not found`` error. Use
     ``PATH=$PATH:~/.local/bin`` to fix this issue if it arises.
 
 dcm2niix Installation
@@ -267,7 +268,6 @@ for this would look like:
         if (s.dim4 == 420) and ('REST' in s.series_id):
             info[rest].append({'item': s.series_id})
 
-    return info
 
 This will match any scans that have 420 volumes and ``'REST'`` in their ID to
 the ``rest`` key we made earlier. Here, the ``series_id`` field is assigned to
@@ -307,11 +307,7 @@ seen below.
 
 .. code-block:: bash
 
-    # set the base dataset directory
-    BASE_DIR=/data/project/genlab/datasets/D01
-
-    heudiconv -s <subject> -ss <session> -d
-    <dataset_path>/dicom/{subject}/ses-{session}/*/*.dcm -o <dataset_path>/nifti -f <dataset_path>/heuristic.py -c dcm2niix -b --overwrite
+    heudiconv -s <subject> -ss <session> -d <dataset_path>/dicom/{subject}/ses-{session}/*/*.dcm -o <dataset_path>/nifti -f <dataset_path>/heuristic.py -c dcm2niix -b --overwrite
 
 The changes are ``-f`` which now points to the new heuristic file, ``-c`` which
 specifies ``dcm2niix`` as the converter, and ``-b`` which sets the output to be
