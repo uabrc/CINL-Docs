@@ -65,6 +65,8 @@ BIDS
 
     /bids/principles.rst
     /bids/heudiconv.rst
+    /bids/practical-heudiconv.rst
+    /bids/heudiconv-scripts.rst
 
 
 About BIDS
