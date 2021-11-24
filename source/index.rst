@@ -61,6 +61,7 @@ BIDS
 .. toctree::
     :maxdepth: 1
     :hidden:
+    :titlesonly:
 
     bids/index.rst
 

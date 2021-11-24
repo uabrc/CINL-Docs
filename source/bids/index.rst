@@ -26,6 +26,7 @@ resources, :doc:`HeuDiConv <bids/heudiconv.rst>`.
 
 .. toctree::
     :maxdepth: 2
+    :titlesonly:
 
     principles.rst
     heudiconv.rst
