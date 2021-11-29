@@ -25,6 +25,7 @@ account using the following `instructions <https://docs.uabgrid.uab.edu/wiki/Che
 .. toctree::
     :maxdepth: 1
     :hidden:
+    :titlesonly:
 
     /xnat/index.rst
     /bids/index.rst

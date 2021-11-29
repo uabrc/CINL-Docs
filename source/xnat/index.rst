@@ -20,3 +20,13 @@ Why Use XNAT
 
 This documenatation contains information on how to create and manage accounts,
 create projects, and upload and download data.
+
+
+.. toctree::
+    :maxdepth: 2
+    :titlesonly:
+    :hidden:
+
+    account.rst
+    file-management.rst
+    projects.rst
