@@ -21,12 +21,13 @@ Conversion from DICOM to BIDS
 While writing custom code to convert from DICOM files to the BIDS framework is
 possible, tools have been to make this more automatic and reproducible across
 datasets. This documentation provides information and examples on one of those
-resources, :doc:`HeuDiConv <bids/heudiconv.rst>`.
+resources, `HeuDiConv <https://github.com/nipy/heudiconv>`__.
 
 
 .. toctree::
     :maxdepth: 2
     :titlesonly:
+    :hidden:
 
     principles.rst
     heudiconv.rst
