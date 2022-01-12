@@ -1,5 +1,5 @@
-Introduction to fmriprep
-========================
+fmriprep
+========
 
 fmriprep is an fMRI preprocessing pipeline designed to provide an easily
 accessible interface regardless of scan acquisition parameters while requiring
@@ -21,3 +21,12 @@ as newer and better software is available.
 
 For more information on fmriprep, please read their `ReadTheDocs
 <https://fmriprep.org/en/stable/>`_. 
+
+
+.. toctree::
+    :maxdepth: 2
+    :titlesonly:
+    :hidden:
+
+    fmriprep-usage.rst
+    fmriprep-scripts.rst
